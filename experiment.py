@@ -372,7 +372,7 @@ def MetaOD_effectiveness(runs=5):
         detailranks.to_csv(rank_path, index=False)
 
 
-def FMUMS_effectiveness(runs=5, loss='cos'):
+def FMMS_effectiveness(runs=5, loss='cos'):
     rate = config.get_rate()
     ytrain, ytest, xtrain, xtest = utils.get_data2(rate)
 
@@ -401,14 +401,14 @@ def FMUMS_effectiveness(runs=5, loss='cos'):
         names.append(rpath)
 
         start = time.time()
-        log = run_FMUMS.Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, str(r))
+        log = run_FMMS.Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, str(r))
         end = time.time()
 
-        # log.to_csv('./experiments/convergence/FMUMS_%s_%s_runs5_%s.csv' % (config.dataset, path, str(r)))      # FMUMS在pmf数据集上参数为path时第r次实验的中间结果
+        # log.to_csv('./experiments/convergence/FMMS_%s_%s_runs5_%s.csv' % (config.dataset, path, str(r)))      # FMMS在pmf数据集上参数为path时第r次实验的中间结果
 
-        ypred = run_FMUMS.Test(params, train_params, xtest, ytest, str(r))
-        rank, detailrank = evaluation.ERank(ypred, ytest, 'FMUMS')  # 所推荐的模型的平均排名
-        topn, num = evaluation.ETopnk(ypred, ytest, int(config.modelnum * 0.05), 5, 'FMUMS')  # 所推荐的模型中，排在前n个的里有几个
+        ypred = run_FMMS.Test(params, train_params, xtest, ytest, str(r))
+        rank, detailrank = evaluation.ERank(ypred, ytest, 'FMMS')  # 所推荐的模型的平均排名
+        topn, num = evaluation.ETopnk(ypred, ytest, int(config.modelnum * 0.05), 5, 'FMMS')  # 所推荐的模型中，排在前n个的里有几个
 
         times.append(end-start)
         ranks.append(rank)
@@ -425,7 +425,7 @@ def FMUMS_effectiveness(runs=5, loss='cos'):
         'topn_num': topn_nums,
     }
 
-    effect_path = './experiments/effectiveness/FMUMS_%s_runs5.csv' % config.dataset
+    effect_path = './experiments/effectiveness/FMMS_%s_runs5.csv' % config.dataset
     if os.path.exists(effect_path):     # 如果路径存在，则在后面罗结果
         df = pd.read_csv(effect_path)
         results = pd.DataFrame(results)
@@ -435,7 +435,7 @@ def FMUMS_effectiveness(runs=5, loss='cos'):
         results = pd.DataFrame(results)
         results.to_csv(effect_path, index=False)
 
-    rank_path = "./experiments/detailresult/result_FMUMS_%s.csv" % config.dataset
+    rank_path = "./experiments/detailresult/result_FMMS_%s.csv" % config.dataset
     if os.path.exists(rank_path):
         df = pd.read_csv(rank_path)
         columns = [str(i) for i in range(xtest.shape[0])]
@@ -449,7 +449,7 @@ def FMUMS_effectiveness(runs=5, loss='cos'):
         detailranks.to_csv(rank_path, index=False)
 
 
-def FMUMS_getrank(loss):
+def FMMS_getrank(loss):
     import pickle
     rate = config.get_rate()
     ytrain, ytest, xtrain, xtest = utils.get_data2(rate)
@@ -463,11 +463,11 @@ def FMUMS_getrank(loss):
 
     detailranks = []
     for r in range(5):
-        ypred = pickle.load(open('./results/%s/result_FMUMS_%s_%s.pkl' % (config.dataset, path, str(r)), 'rb'), encoding='iso-8859-1')['FMUMS']
+        ypred = pickle.load(open('./results/%s/result_FMMS_%s_%s.pkl' % (config.dataset, path, str(r)), 'rb'), encoding='iso-8859-1')['FMMS']
         _, detailrank = evaluation.ERank(ypred, ytest)
         detailranks.append(detailrank)
 
-    rank_path = "./experiments/detailresult/result_FMUMS_%s.csv" % config.dataset
+    rank_path = "./experiments/detailresult/result_FMMS_%s.csv" % config.dataset
     if os.path.exists(rank_path):
         df = pd.read_csv(rank_path)
         columns = [str(i) for i in range(xtest.shape[0])]
@@ -481,7 +481,7 @@ def FMUMS_getrank(loss):
         detailranks.to_csv(rank_path, index=False)
 
 
-def FMUMS_parameter(dict1=None, dict2=None, runs=5):
+def FMMS_parameter(dict1=None, dict2=None, runs=5):
     rate = config.get_rate()
     ytrain, ytest, xtrain, xtest = utils.get_data2(rate)
 
@@ -510,15 +510,15 @@ def FMUMS_parameter(dict1=None, dict2=None, runs=5):
         names.append(rpath)
 
         start = time.time()
-        log = run_FMUMS.Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, str(r))
+        log = run_FMMS.Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, str(r))
         end = time.time()
 
-        # log.to_csv('./experiments/convergence/FMUMS_%s_%s_runs5_%s.csv' % (
-        # config.dataset, path, str(r)))  # FMUMS在pmf数据集上参数为path时第r次实验的中间结果
+        # log.to_csv('./experiments/convergence/FMMS_%s_%s_runs5_%s.csv' % (
+        # config.dataset, path, str(r)))  # FMMS在pmf数据集上参数为path时第r次实验的中间结果
 
-        ypred = run_FMUMS.Test(params, train_params, xtest, ytest, str(r))
-        rank, detailrank = evaluation.ERank(ypred, ytest, 'FMUMS')  # 所推荐的模型的平均排名
-        topn, num = evaluation.ETopnk(ypred, ytest, int(config.modelnum * 0.05), 5, 'FMUMS')  # 所推荐的模型中，排在前n个的里有几个
+        ypred = run_FMMS.Test(params, train_params, xtest, ytest, str(r))
+        rank, detailrank = evaluation.ERank(ypred, ytest, 'FMMS')  # 所推荐的模型的平均排名
+        topn, num = evaluation.ETopnk(ypred, ytest, int(config.modelnum * 0.05), 5, 'FMMS')  # 所推荐的模型中，排在前n个的里有几个
 
         times.append(end - start)
         ranks.append(rank)
@@ -535,7 +535,7 @@ def FMUMS_parameter(dict1=None, dict2=None, runs=5):
         'topn_num': topn_nums,
     }
 
-    effect_path = './experiments/parameter/FMUMS_%s_runs5.csv' % config.dataset
+    effect_path = './experiments/parameter/FMMS_%s_runs5.csv' % config.dataset
     if os.path.exists(effect_path):  # 如果路径存在，则在后面罗结果
         df = pd.read_csv(effect_path)
         results = pd.DataFrame(results)
@@ -545,7 +545,7 @@ def FMUMS_parameter(dict1=None, dict2=None, runs=5):
         results = pd.DataFrame(results)
         results.to_csv(effect_path, index=False)
 
-    rank_path = "./experiments/detailresult/result_FMUMS_%s.csv" % config.dataset
+    rank_path = "./experiments/detailresult/result_FMMS_%s.csv" % config.dataset
     if os.path.exists(rank_path):
         df = pd.read_csv(rank_path)
         columns = [str(i) for i in range(xtest.shape[0])]
@@ -590,8 +590,8 @@ def test_time(model_name):
         params['model_size'] = model_size
 
         start = time.time()
-        if model_name == 'FMUMS':
-            run_FMUMS.Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest)
+        if model_name == 'FMMS':
+            run_FMMS.Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest)
         elif model_name == 'MetaOD':
             import cmp_metaod
             cmp_metaod.Train(ytrain, yvalid, xtrain, xvalid)
@@ -640,28 +640,28 @@ def test_time(model_name):
 if __name__ == '__main__':
     test_time('MetaOD')
 
-    # FMUMS
+    # FMMS
     # paratest
     ks = [1, 2, 4, 8, 16, 32]
     batchs = [2, 4, 8, 16, 32, 64]
     lrs = [0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]
     epochs = [20, 40, 60, 80, 100, 120]
     # for batch in batchs:
-    #     FMUMS_parameter(dict1={'batch': batch})
+    #     FMMS_parameter(dict1={'batch': batch})
     # for k in ks:
-    #     FMUMS_parameter(dict2={'embedding_size': k})
+    #     FMMS_parameter(dict2={'embedding_size': k})
     # for lr in lrs:
-    #     FMUMS_parameter(dict1={'lr': lr})
+    #     FMMS_parameter(dict1={'lr': lr})
     # for epoch in epochs:
-    #     FMUMS_parameter(dict1={'epoch': epoch})
+    #     FMMS_parameter(dict1={'epoch': epoch})
 
-    # FMUMS
+    # FMMS
     # loss_list = ['cos', 'rmse', 'mse', 'L1', 'sL1', 'kd']
     # loss_list = ['cos']
     # for loss in loss_list:
-    #     FMUMS_effectiveness(loss=loss)
+    #     FMMS_effectiveness(loss=loss)
     # for loss in loss_list:
-    #     FMUMS_getrank(loss=loss)
+    #     FMMS_getrank(loss=loss)
 
     # MetaOD
     # MetaOD_effectiveness()
