@@ -3,7 +3,7 @@ import pandas as pd
 import config
 import evaluation
 import utils
-from FMUMS import FMUMS
+from FMMS import FMMS
 import torch
 import torch.utils.data as Data
 import pickle
@@ -19,9 +19,9 @@ def Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, tx
         batch_size=train_params['batch'],  # 最新批数据
         shuffle=False  # 是否随机打乱数据
     )
-    fmums = FMUMS(**params)
+    fmms = FMMS(**params)
     # 训练网络
-    optimizer = train_params['opt'](fmums.parameters(), lr=train_params['lr'])
+    optimizer = train_params['opt'](fmms.parameters(), lr=train_params['lr'])
     loss_train_set = []
     loss_valid_set = []
     loss_test_set = []
@@ -45,12 +45,12 @@ def Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, tx
         for step, (batch_x, batch_y) in enumerate(loader):  # 每个训练步骤
             # 此处省略一些训练步骤
             optimizer.zero_grad()  # 如果不置零，Variable的梯度在每次backwrd的时候都会累加
-            output = fmums(batch_x)
+            output = fmms(batch_x)
             # 平方差
             loss_train = train_params['loss'](output, batch_y)
             l2_regularization = torch.tensor(0).float()
             # 加入l2正则
-            for param in fmums.parameters():
+            for param in fmms.parameters():
                 l2_regularization += torch.norm(param, 2)
             # loss = rmse_loss + l2_regularization
             loss_train.backward()
@@ -60,7 +60,7 @@ def Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, tx
         # 将每一次训练的数据进行存储，然后用于绘制曲线
 
         # train
-        ytrainpred = fmums(torch.tensor(xtrain))
+        ytrainpred = fmms(torch.tensor(xtrain))
         loss_train = train_params['loss'](ytrainpred, ytrain)
         ytrainpred = ytrainpred.detach().numpy()
         train_rank, _ = evaluation.ERank(ytrainpred, ytrain)
@@ -70,7 +70,7 @@ def Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, tx
         ERank_train.append(train_topn)
 
         # valid
-        yvalidpred = fmums(torch.tensor(xvalid))
+        yvalidpred = fmms(torch.tensor(xvalid))
         loss_valid = train_params['loss'](yvalidpred, yvalid)
         yvalidpred = yvalidpred.detach().numpy()
         valid_rank, _ = evaluation.ERank(yvalidpred, yvalid)
@@ -80,7 +80,7 @@ def Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, tx
         ERank_valid.append(valid_topn)
 
         # test
-        ytestpred = fmums(torch.tensor(xtest))
+        ytestpred = fmms(torch.tensor(xtest))
         loss_test = train_params['loss'](ytestpred, ytest)
         ytestpred = ytestpred.detach().numpy()
         test_rank, _ = evaluation.ERank(ytestpred, ytest)
@@ -91,9 +91,9 @@ def Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest, tx
 
         print("epoch: %d" % epoch, "loss_train:", loss_train.item(), "loss_test", loss_test.item())
     # print(y_train[0:5],"  ",output[0:5])
-    # plot.plot_convergence(loss_train_set, loss_test_set, path='fmums'+path)
+    # plot.plot_convergence(loss_train_set, loss_test_set, path='fmms'+path)
     # # 保存训练好的模型
-    torch.save(fmums.state_dict(), "models/%s/FMUMS%s_%s.pt" % (config.dataset, path, txt))
+    torch.save(fmms.state_dict(), "models/%s/FMMS%s_%s.pt" % (config.dataset, path, txt))
     log = {
         'loss_train_set': loss_train_set,
         'loss_valid_set': loss_valid_set,
@@ -113,14 +113,14 @@ def Test(params, train_params, x_test, y_test, txt=''):
     # test
     path = config.get_para(train_params, params)
     print(path)
-    fmums = FMUMS(**params)
-    fmums.load_state_dict(torch.load("models/%s/FMUMS%s_%s.pt" % (config.dataset, path, txt)))
-    pred = fmums(torch.tensor(x_test))
+    fmms = FMMS(**params)
+    fmms.load_state_dict(torch.load("models/%s/FMMS%s_%s.pt" % (config.dataset, path, txt)))
+    pred = fmms(torch.tensor(x_test))
     loss = train_params['loss'](pred, y_test)
     pred = pred.detach().numpy()
     print("test_loss", loss)
-    result = {'FMUMS': pred}
-    pickle.dump(result, open("results/%s/fmums%s_%s.pkl" % (config.dataset, path, txt), 'wb'))
+    result = {'FMMS': pred}
+    pickle.dump(result, open("results/%s/fmms%s_%s.pkl" % (config.dataset, path, txt), 'wb'))
 
     return pred
 
@@ -160,10 +160,10 @@ def main(txt=''):
     # ytest = utils.scaleY(ytest)
     xtrain, ytrain, xvalid, yvalid = utils.train_test_val_split(xtrain, ytrain, rate)
     log = Train(params, train_params, xtrain, xvalid, xtest, ytrain, yvalid, ytest)
-    log.to_csv('./experiments/convergence/FMUMS%s.csv'%txt)  # fmums在pmf数据集上参数为path时第r次实验的中间结果
+    log.to_csv('./experiments/convergence/FMMS%s.csv'%txt)  # fmms在pmf数据集上参数为path时第r次实验的中间结果
     ypred = Test(params, train_params, xtest, ytest)
-    evaluation.ERank(ypred, ytest, 'FMUMS')                                          # 所推荐的模型的平均排名
-    evaluation.ETopnk(ypred, ytest, int(config.modelnum*0.05), 5, 'FMUMS')           # 所推荐的模型中，排在前n个的里有几个
+    evaluation.ERank(ypred, ytest, 'FMMS')                                          # 所推荐的模型的平均排名
+    evaluation.ETopnk(ypred, ytest, int(config.modelnum*0.05), 5, 'FMMS')           # 所推荐的模型中，排在前n个的里有几个
 
 
 if __name__ == '__main__':
