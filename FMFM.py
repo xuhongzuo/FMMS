@@ -3,7 +3,7 @@ from torch import nn
 import numpy as np
 
 
-class FMUMS(nn.Module):
+class FMMS(nn.Module):
     def __init__(self, feature_size, embedding_size, model_size, layer_size, hiddensize, FM, DNN):
         super(FMUMS, self).__init__()
         self.feature_size = feature_size        # denote as N, size of the feature dictionary
